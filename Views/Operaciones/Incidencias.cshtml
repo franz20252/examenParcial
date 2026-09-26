@@ -1,9 +1,26 @@
 @model IncidenciasViewModel
+@using examenParcial.Services
+@using Microsoft.Extensions.Options
+@inject IOptions<PieSocketOptions> PieSocket
 @{
     ViewData["Title"] = "Incidencias";
+    var tiempoReal = PieSocket.Value;
 }
 
-<h1>Incidencias abiertas con consulta rápida</h1>
+<h1>Incidencias abiertas en tiempo real</h1>
+
+@if (tiempoReal.ClienteConfigurado)
+{
+    @* Solo datos públicos: el API Secret nunca se envía al navegador. *@
+    <p id="tiempo-real-estado" class="small text-muted" aria-live="polite"
+       data-cluster-id="@tiempoReal.ClusterId" data-api-key="@tiempoReal.ApiKey" data-channel="@tiempoReal.Channel">
+        Tiempo real: conectando…
+    </p>
+}
+else
+{
+    <p class="small text-muted">Tiempo real no disponible: PieSocket no está configurado.</p>
+}
 
 <form asp-action="Incidencias" method="get" class="row g-2 my-3" role="search">
     <div class="col-sm-8 col-md-6">
@@ -25,6 +42,7 @@
     <div class="alert alert-success">@mensaje</div>
 }
 
+<div id="incidencias-listado">
 @if (Model.Error is not null)
 {
     <div class="alert alert-warning">@Model.Error</div>
@@ -51,12 +69,12 @@ else
         <tbody>
             @foreach (var incidencia in Model.Incidencias)
             {
-                <tr>
+                <tr data-incidencia-id="@incidencia.Id">
                     <td>@incidencia.Id</td>
                     <td>@incidencia.Estacion</td>
                     <td>@incidencia.Descripcion</td>
                     <td>@incidencia.Prioridad</td>
-                    <td>@incidencia.Estado</td>
+                    <td data-campo="estado">@incidencia.Estado</td>
                     <td class="text-end">
                         @if (incidencia.Estado == EstadoIncidencia.Abierta)
                         {
@@ -70,4 +88,9 @@ else
             }
         </tbody>
     </table>
+}
+</div>
+
+@section Scripts {
+    <script src="~/js/incidencias-tiempo-real.js" asp-append-version="true"></script>
 }

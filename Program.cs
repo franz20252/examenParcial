@@ -42,6 +42,15 @@ builder.Services.Configure<AlgoliaOptions>(options =>
 });
 builder.Services.AddSingleton<IAlgoliaSearchService, AlgoliaSearchService>();
 
+builder.Services.Configure<PieSocketOptions>(options =>
+{
+    options.ClusterId = PieSocketOptions.NormalizarClusterId(builder.Configuration["PIESOCKET_CLUSTER_ID"]);
+    options.ApiKey = builder.Configuration["PIESOCKET_API_KEY"];
+    options.ApiSecret = builder.Configuration["PIESOCKET_API_SECRET"];
+    options.Channel = builder.Configuration["PIESOCKET_CHANNEL"];
+});
+builder.Services.AddHttpClient<IPieSocketService, PieSocketService>(client => client.Timeout = TimeSpan.FromSeconds(10));
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     // Render termina TLS en su proxy y reenvía la petición por HTTP.

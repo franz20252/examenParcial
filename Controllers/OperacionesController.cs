@@ -12,6 +12,7 @@ public class OperacionesController(
     ApplicationDbContext db,
     IIncidenciasCacheService cache,
     IAlgoliaSearchService algolia,
+    IPieSocketService pieSocket,
     ILogger<OperacionesController> logger) : Controller
 {
     private const int LongitudMaximaBusqueda = 200;
@@ -81,6 +82,9 @@ public class OperacionesController(
             await db.SaveChangesAsync(cancellationToken);
             // Solo se invalida cuando SQLite ya guardó el nuevo estado.
             await cache.InvalidarAbiertasAsync();
+            // Se publica después de guardar en SQLite y de invalidar Redis: si un cliente vuelve a pedir el
+            // listado al recibir el evento, ya no obtiene la versión cacheada. Si falla, el cierre se mantiene.
+            await pieSocket.PublicarIncidenciaActualizadaAsync(incidencia.Id, incidencia.Estado);
             TempData["Mensaje"] = $"Incidencia #{incidencia.Id} cerrada.";
         }
 
