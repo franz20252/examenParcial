@@ -1,0 +1,73 @@
+@model IncidenciasViewModel
+@{
+    ViewData["Title"] = "Incidencias";
+}
+
+<h1>Incidencias abiertas encontradas</h1>
+
+<form asp-action="Incidencias" method="get" class="row g-2 my-3" role="search">
+    <div class="col-sm-8 col-md-6">
+        <label for="q" class="visually-hidden">Buscar por estación o descripción</label>
+        <input type="search" id="q" name="q" value="@Model.Busqueda" maxlength="200"
+               class="form-control" placeholder="Buscar por estación o descripción" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        @if (Model.EsBusqueda)
+        {
+            <a asp-action="Incidencias" class="btn btn-outline-secondary">Limpiar</a>
+        }
+    </div>
+</form>
+
+@if (TempData["Mensaje"] is string mensaje)
+{
+    <div class="alert alert-success">@mensaje</div>
+}
+
+@if (Model.Error is not null)
+{
+    <div class="alert alert-warning">@Model.Error</div>
+}
+else if (Model.Incidencias.Count == 0)
+{
+    <p class="text-muted">
+        @(Model.EsBusqueda ? $"No hay incidencias abiertas que coincidan con \"{Model.Busqueda}\"." : "No hay incidencias abiertas.")
+    </p>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Estación</th>
+                <th>Descripción</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var incidencia in Model.Incidencias)
+            {
+                <tr>
+                    <td>@incidencia.Id</td>
+                    <td>@incidencia.Estacion</td>
+                    <td>@incidencia.Descripcion</td>
+                    <td>@incidencia.Prioridad</td>
+                    <td>@incidencia.Estado</td>
+                    <td class="text-end">
+                        @if (incidencia.Estado == EstadoIncidencia.Abierta)
+                        {
+                            <form asp-action="Cerrar" asp-route-id="@incidencia.Id" method="post" class="d-inline">
+                                <input type="hidden" name="q" value="@Model.Busqueda" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
