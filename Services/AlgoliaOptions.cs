@@ -20,4 +20,10 @@ public class AlgoliaOptions
         !string.IsNullOrWhiteSpace(AppId)
         && !string.IsNullOrWhiteSpace(ApiKeyParaBusqueda)
         && !string.IsNullOrWhiteSpace(IndexName);
+
+    // Cargar datos en el índice requiere la Admin API Key.
+    public bool IndexacionConfigurada =>
+        !string.IsNullOrWhiteSpace(AppId)
+        && !string.IsNullOrWhiteSpace(AdminApiKey)
+        && !string.IsNullOrWhiteSpace(IndexName);
 }

@@ -41,6 +41,7 @@ builder.Services.Configure<AlgoliaOptions>(options =>
     options.IndexName = builder.Configuration["ALGOLIA_INDEX_NAME"];
 });
 builder.Services.AddSingleton<IAlgoliaSearchService, AlgoliaSearchService>();
+builder.Services.AddSingleton<IAlgoliaIndexService, AlgoliaIndexService>();
 
 builder.Services.Configure<PieSocketOptions>(options =>
 {
@@ -66,6 +67,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.InicializarAsync(scope.ServiceProvider);
+
+    // Carga en Algolia las incidencias de SQLite para que la búsqueda tenga datos.
+    await scope.ServiceProvider.GetRequiredService<IAlgoliaIndexService>()
+        .SincronizarDesdeSqliteAsync(scope.ServiceProvider.GetRequiredService<ApplicationDbContext>());
 }
 
 app.UseForwardedHeaders();

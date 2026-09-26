@@ -12,6 +12,7 @@ public class OperacionesController(
     ApplicationDbContext db,
     IIncidenciasCacheService cache,
     IAlgoliaSearchService algolia,
+    IAlgoliaIndexService algoliaIndex,
     IPieSocketService pieSocket,
     ILogger<OperacionesController> logger) : Controller
 {
@@ -85,6 +86,8 @@ public class OperacionesController(
             // Se publica después de guardar en SQLite y de invalidar Redis: si un cliente vuelve a pedir el
             // listado al recibir el evento, ya no obtiene la versión cacheada. Si falla, el cierre se mantiene.
             await pieSocket.PublicarIncidenciaActualizadaAsync(incidencia.Id, incidencia.Estado);
+            // Mantiene el índice de Algolia coherente; la búsqueda sigue filtrando por SQLite.
+            await algoliaIndex.ActualizarEstadoAsync(incidencia.Id, incidencia.Estado);
             TempData["Mensaje"] = $"Incidencia #{incidencia.Id} cerrada.";
         }
 

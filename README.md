@@ -20,6 +20,11 @@ Configúralas en Render → _Environment_. No guardes valores reales en el repos
 | `PIESOCKET_API_KEY`                      | Sí, para tiempo real | API key. Es pública: el navegador la usa para abrir el WebSocket                                                          |
 | `PIESOCKET_API_SECRET`                   | Sí, para publicar    | API secret. Solo se usa en el servidor; nunca llega al navegador                                                          |
 | `PIESOCKET_CHANNEL`                      | Sí, para tiempo real | Canal/room donde se publican los eventos                                                                                  |
+| `ALGOLIA_APP_ID`                         | Sí, para búsqueda    | Application ID de Algolia                                                                                                 |
+| `ALGOLIA_SEARCH_API_KEY`                 | Sí, para búsqueda    | Search-only API key. Solo se usa en el servidor                                                                           |
+| `ALGOLIA_ADMIN_API_KEY`                  | Sí, para indexar     | Admin API key. Al arrancar copia las incidencias de SQLite al índice y actualiza su estado al cerrar. Solo servidor       |
+| `ALGOLIA_INDEX_NAME`                     | Sí, para búsqueda    | Nombre del índice, p. ej. `incidencias` (se crea automáticamente)                                                         |
+| `ConnectionStrings__Redis`               | No                   | Redis para cachear 60 s el listado general. Acepta `redis://usuario:contraseña@host:puerto`. Sin ella se usa SQLite        |
 | `ConnectionStrings__DefaultConnection`   | No                   | SQLite; por defecto `Data Source=examenParcial.db`                                                                        |
 | `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` | No                   | Crea un usuario de prueba al arrancar                                                                                     |
 
