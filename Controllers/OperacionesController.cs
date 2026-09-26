@@ -10,6 +10,7 @@ namespace examenParcial.Controllers;
 [Authorize]
 public class OperacionesController(
     ApplicationDbContext db,
+    IIncidenciasCacheService cache,
     IAlgoliaSearchService algolia,
     ILogger<OperacionesController> logger) : Controller
 {
@@ -29,15 +30,12 @@ public class OperacionesController(
 
         if (string.IsNullOrWhiteSpace(busqueda))
         {
-            // Prioridad se guarda como texto; se ordena en memoria para respetar el orden del enum.
-            var lista = await abiertas.ToListAsync(cancellationToken);
-            modelo.Incidencias = lista
-                .OrderByDescending(i => i.Prioridad)
-                .ThenBy(i => i.Id)
-                .ToList();
+            // Listado general: Redis durante 60 s, con SQLite como fuente de verdad.
+            modelo.Incidencias = await cache.ObtenerAbiertasAsync(cancellationToken);
             return View(modelo);
         }
 
+        // Búsqueda con texto: Algolia, nunca la caché del listado general.
         if (!algolia.EstaConfigurado)
         {
             modelo.Error = "La búsqueda no está disponible: Algolia no está configurado en el servidor.";
@@ -81,6 +79,8 @@ public class OperacionesController(
         {
             incidencia.Estado = EstadoIncidencia.Cerrada;
             await db.SaveChangesAsync(cancellationToken);
+            // Solo se invalida cuando SQLite ya guardó el nuevo estado.
+            await cache.InvalidarAbiertasAsync();
             TempData["Mensaje"] = $"Incidencia #{incidencia.Id} cerrada.";
         }
 
