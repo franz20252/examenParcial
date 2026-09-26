@@ -21,6 +21,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Redis: variable de entorno ConnectionStrings__Redis. Sin ella, el listado se lee siempre de SQLite.
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.ConfigurationOptions = RedisConfiguracion.CrearOpciones(redisConnection);
+        options.InstanceName = "examenParcial:";
+    });
+}
+builder.Services.AddScoped<IIncidenciasCacheService, IncidenciasCacheService>();
+
+builder.Services.Configure<AlgoliaOptions>(options =>
+{
+    options.AppId = builder.Configuration["ALGOLIA_APP_ID"];
+    options.SearchApiKey = builder.Configuration["ALGOLIA_SEARCH_API_KEY"];
+    options.AdminApiKey = builder.Configuration["ALGOLIA_ADMIN_API_KEY"];
+    options.IndexName = builder.Configuration["ALGOLIA_INDEX_NAME"];
+});
+builder.Services.AddSingleton<IAlgoliaSearchService, AlgoliaSearchService>();
+
 builder.Services.Configure<PieSocketOptions>(options =>
 {
     options.ClusterId = PieSocketOptions.NormalizarClusterId(builder.Configuration["PIESOCKET_CLUSTER_ID"]);
