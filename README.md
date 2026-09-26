@@ -12,16 +12,16 @@ Al cerrar una incidencia, el servidor guarda `Estado = Cerrada` en SQLite y, **s
 
 ## Variables de entorno (Render)
 
-Configúralas en Render → *Environment*. No guardes valores reales en el repositorio.
+Configúralas en Render → _Environment_. No guardes valores reales en el repositorio.
 
-| Variable | Obligatoria | Descripción |
-|---|---|---|
-| `PIESOCKET_CLUSTER_ID` | Sí, para tiempo real | Cluster de la API key (p. ej. `s12345.nyc1`). También se acepta la URL del cluster (`https://s12345.nyc1.piesocket.com/`) |
-| `PIESOCKET_API_KEY` | Sí, para tiempo real | API key. Es pública: el navegador la usa para abrir el WebSocket |
-| `PIESOCKET_API_SECRET` | Sí, para publicar | API secret. Solo se usa en el servidor; nunca llega al navegador |
-| `PIESOCKET_CHANNEL` | Sí, para tiempo real | Canal/room donde se publican los eventos |
-| `ConnectionStrings__DefaultConnection` | No | SQLite; por defecto `Data Source=examenParcial.db` |
-| `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` | No | Crea un usuario de prueba al arrancar |
+| Variable                                 | Obligatoria          | Descripción                                                                                                               |
+| ---------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `PIESOCKET_CLUSTER_ID`                   | Sí, para tiempo real | Cluster de la API key (p. ej. `s12345.nyc1`). También se acepta la URL del cluster (`https://s12345.nyc1.piesocket.com/`) |
+| `PIESOCKET_API_KEY`                      | Sí, para tiempo real | API key. Es pública: el navegador la usa para abrir el WebSocket                                                          |
+| `PIESOCKET_API_SECRET`                   | Sí, para publicar    | API secret. Solo se usa en el servidor; nunca llega al navegador                                                          |
+| `PIESOCKET_CHANNEL`                      | Sí, para tiempo real | Canal/room donde se publican los eventos                                                                                  |
+| `ConnectionStrings__DefaultConnection`   | No                   | SQLite; por defecto `Data Source=examenParcial.db`                                                                        |
+| `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` | No                   | Crea un usuario de prueba al arrancar                                                                                     |
 
 Sin las variables de PieSocket la aplicación funciona igual, pero sin actualización en tiempo real.
 
@@ -36,3 +36,6 @@ dotnet user-secrets set "SEED_USER_EMAIL" "<email>"
 dotnet user-secrets set "SEED_USER_PASSWORD" "<contraseña>"
 dotnet run
 ```
+
+USUARIO:profe@usmp.pe
+Contraseña:TuClave#2026
