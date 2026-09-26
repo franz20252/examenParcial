@@ -33,6 +33,15 @@ if (!string.IsNullOrWhiteSpace(redisConnection))
 }
 builder.Services.AddScoped<IIncidenciasCacheService, IncidenciasCacheService>();
 
+builder.Services.Configure<AlgoliaOptions>(options =>
+{
+    options.AppId = builder.Configuration["ALGOLIA_APP_ID"];
+    options.SearchApiKey = builder.Configuration["ALGOLIA_SEARCH_API_KEY"];
+    options.AdminApiKey = builder.Configuration["ALGOLIA_ADMIN_API_KEY"];
+    options.IndexName = builder.Configuration["ALGOLIA_INDEX_NAME"];
+});
+builder.Services.AddSingleton<IAlgoliaSearchService, AlgoliaSearchService>();
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     // Render termina TLS en su proxy y reenvía la petición por HTTP.

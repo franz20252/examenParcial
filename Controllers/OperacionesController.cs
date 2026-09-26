@@ -11,6 +11,7 @@ namespace examenParcial.Controllers;
 public class OperacionesController(
     ApplicationDbContext db,
     IIncidenciasCacheService cache,
+    IAlgoliaSearchService algolia,
     ILogger<OperacionesController> logger) : Controller
 {
     private const int LongitudMaximaBusqueda = 200;
@@ -34,18 +35,35 @@ public class OperacionesController(
             return View(modelo);
         }
 
-        // Búsqueda con texto: nunca usa la caché del listado general.
-        logger.LogInformation("Búsqueda con texto: consulta directa a SQLite, sin caché de Redis.");
-        var patron = $"%{EscaparLike(busqueda)}%";
-        modelo.Incidencias = await abiertas
-            .Where(i => EF.Functions.Like(i.Estacion, patron, "\\") || EF.Functions.Like(i.Descripcion, patron, "\\"))
-            .OrderBy(i => i.Id)
+        // Búsqueda con texto: Algolia, nunca la caché del listado general.
+        if (!algolia.EstaConfigurado)
+        {
+            modelo.Error = "La búsqueda no está disponible: Algolia no está configurado en el servidor.";
+            return View(modelo);
+        }
+
+        IReadOnlyList<int> ids;
+        try
+        {
+            ids = await algolia.BuscarIdsAsync(busqueda, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Error al consultar Algolia");
+            modelo.Error = "No se pudo completar la búsqueda. Inténtalo de nuevo más tarde.";
+            return View(modelo);
+        }
+
+        // La base de datos local es la fuente de verdad: solo incidencias existentes y abiertas.
+        var encontradas = await abiertas
+            .Where(i => ids.Contains(i.Id))
             .ToListAsync(cancellationToken);
+
+        // Se conserva el orden de relevancia de Algolia.
+        var posicion = ids.Select((id, indice) => (id, indice)).ToDictionary(x => x.id, x => x.indice);
+        modelo.Incidencias = encontradas.OrderBy(i => posicion[i.Id]).ToList();
         return View(modelo);
     }
-
-    private static string EscaparLike(string texto) =>
-        texto.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
     [HttpPost]
     [ValidateAntiForgeryToken]
